@@ -15,8 +15,8 @@ The [justfile](./justfile) contains recipes to create topics, produce and query 
 Once you have the prerequisites installed, clone this repository and start everything up with:
 
 ```sh
-git clone git@github.com:tansu-io/example-delta-duckdb.git
-cd example-pyiceberg
+git clone git@github.com:tansu-io/example-delta-lake.git
+cd example-delta-lake
 ```
 
 Start everything up with:
