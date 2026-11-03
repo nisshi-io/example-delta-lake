@@ -6,7 +6,7 @@ or [Protocol buffers](protocol-buffers) can be written as [Apache Iceberg](https
 This repository showcases examples of structured data published to schema-backed topics, instantly accessible as [Delta Lake](https://delta.io) tables.
 
 Prerequisites:
-- **[docker](https://www.docker.com)**, using [compose.yaml](compose.yaml) which runs [Nisshi](https://nisshi.io) and [MinIO](https://min.io)
+- **[docker](https://www.docker.com)**, using [compose.yaml](compose.yaml) which runs [Nisshi](https://nisshi.io) and [MinIO](https://min.io). MinIO no longer publishes images, so the compose file uses [`pgsty/silo`](https://hub.docker.com/r/pgsty/silo), a community-maintained build of MinIO pinned by digest.
 - **[duckdb](https://duckdb.org)**, a fast open source database system [that has native support for Delta Lake](https://duckdb.org/2024/06/10/delta.html)
 - **[just](https://github.com/casey/just)**, a handy way to save and run project-specific commands
 
@@ -94,7 +94,7 @@ Create the employee topic:
 just employee-topic-create
 ```
 
-The above command will create an `nisshi.employee` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize)
+The above command will create a `nisshi.employee` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize)
 and partitioned on the `meta.year`, `meta.month`, `meta.day` from the Kafka message:
 
 | config               | value                         |
@@ -195,7 +195,7 @@ Create the grade topic:
 just grade-topic-create
 ```
 
-The above command will create an `nisshi.grade` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize),
+The above command will create a `nisshi.grade` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize),
 partitioned on `meta.year` from the Kafka message, the [Z Order](https://delta.io/blog/2023-06-03-delta-lake-z-order/) of the data is `value.grade` :
 
 | config                         | value                                                                   |
