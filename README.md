@@ -1,12 +1,12 @@
-[Tansu](https://tansu.io) is an Apache Kafka API compatible broker written in async 🚀 Rust 🦀 with PostgreSQL, S3 or memory storage engines.
+[Nisshi](https://nisshi.io) is an Apache Kafka®-compatible broker written in async 🚀 Rust 🦀, with PostgreSQL, S3 (experimental) or memory storage engines.
 
-Topics [validated](https://github.com/tansu-io/tansu/blob/main/docs/schema-registry.md) by [JSON Schema](https://json-schema.org), [Apache Avro](https://avro.apache.org)
+Topics [validated](https://github.com/nisshi-io/solace-nisshi/blob/main/docs/schema-registry.md) by [JSON Schema](https://json-schema.org), [Apache Avro](https://avro.apache.org)
 or [Protocol buffers](protocol-buffers) can be written as [Apache Iceberg](https://iceberg.apache.org) or [Delta Lake](https://delta.io) tables
 
 This repository showcases examples of structured data published to schema-backed topics, instantly accessible as [Delta Lake](https://delta.io) tables.
 
 Prerequisites:
-- **[docker](https://www.docker.com)**, using [compose.yaml](compose.yaml) which runs [tansu](https://tansu.io) and [MinIO](https://min.io)
+- **[docker](https://www.docker.com)**, using [compose.yaml](compose.yaml) which runs [Nisshi](https://nisshi.io) and [MinIO](https://min.io)
 - **[duckdb](https://duckdb.org)**, a fast open source database system [that has native support for Delta Lake](https://duckdb.org/2024/06/10/delta.html)
 - **[just](https://github.com/casey/just)**, a handy way to save and run project-specific commands
 
@@ -15,8 +15,8 @@ The [justfile](./justfile) contains recipes to create topics, produce and query 
 Once you have the prerequisites installed, clone this repository and start everything up with:
 
 ```sh
-git clone git@github.com:tansu-io/example-delta-duckdb.git
-cd example-pyiceberg
+git clone https://github.com/nisshi-io/example-delta-lake.git
+cd example-delta-lake
 ```
 
 Start everything up with:
@@ -28,9 +28,9 @@ just up
 Should result in:
 
 ```
-✔ Network example-delta-duckdb_default    Created
-✔ Volume "example-delta-duckdb_minio"     Created
-✔ Container example-delta-duckdb-minio-1  Healthy
+✔ Network example-delta-lake_default    Created
+✔ Volume "example-delta-lake_minio"     Created
+✔ Container example-delta-lake-minio-1  Healthy
 docker compose exec minio mc ready local
 mc: Configuration written to `/tmp/.mc/config.json`. Please update your access credentials.
 mc: Successfully created `/tmp/.mc/share`.
@@ -39,20 +39,20 @@ mc: Initialized share downloads `/tmp/.mc/share/downloads.json` file.
 The cluster 'local' is ready
 docker compose exec minio mc alias set local http://localhost:9000 minioadmin minioadmin
 Added `local` successfully.
-docker compose exec minio mc mb local/tansu
-Bucket created successfully `local/tansu`.
+docker compose exec minio mc mb local/nisshi
+Bucket created successfully `local/nisshi`.
 docker compose exec minio mc mb local/lake
 Bucket created successfully `local/lake`.
-docker compose up --detach --wait tansu
-✔ tansu Pulled
-✔ Container example-delta-duckdb-tansu-1  Healthy
+docker compose up --detach --wait nisshi
+✔ nisshi Pulled
+✔ Container example-delta-lake-nisshi-1  Healthy
 ```
 
 The above does the following:
 - starts the [MinIO](https://min.io) S3 compatible service
 - creates a `s3://lake` bucket in [MinIO](https://min.io), used to store the [Delta Lake](https://delta.io) tables
-- creates a `s3://tansu` bucket in [MinIO](https://min.io), used to store Kafka related data used by [tansu](https://tansu.io)
-- runs the [tansu](https://tansu.io) broker configured to use [MinIO](https://min.io) as the storage engine with [Delta Lake](https://delta.io)
+- creates a `s3://nisshi` bucket in [MinIO](https://min.io), used to store Kafka related data used by [Nisshi](https://nisshi.io)
+- runs the [Nisshi](https://nisshi.io) broker configured to use [MinIO](https://min.io) as the storage engine with [Delta Lake](https://delta.io)
 
 Done! You can now run the examples.
 
@@ -94,13 +94,13 @@ Create the employee topic:
 just employee-topic-create
 ```
 
-The above command will create an `tansu.employee` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize)
+The above command will create an `nisshi.employee` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize)
 and partitioned on the `meta.year`, `meta.month`, `meta.day` from the Kafka message:
 
 | config               | value                         |
 |----------------------|-------------------------------|
-| tansu.lake.partition | meta.year,meta.month,meta.day |
-| tansu.lake.normalize | true                          |
+| nisshi.lake.partition | meta.year,meta.month,meta.day |
+| nisshi.lake.normalize | true                          |
 
 
 Publish the sample data onto the employee topic:
@@ -109,16 +109,16 @@ Publish the sample data onto the employee topic:
 just employee-produce
 ```
 
-We can view the [Delta Lake](https://delta.io) table created in `s3://lake/tansu.employee` with:
+We can view the [Delta Lake](https://delta.io) table created in `s3://lake/nisshi.employee` with:
 
 ```sh
-just minio-mc ls -r local/lake/tansu.employee
+just minio-mc ls -r local/lake/nisshi.employee
 ```
 
-Note that the `tansu.employee` table, is partitioned on the `meta.year`, `meta.month`, `meta.day`:
+Note that the `nisshi.employee` table, is partitioned on the `meta.year`, `meta.month`, `meta.day`:
 
 ```sh
-docker compose exec minio mc ls -r local/lake/tansu.employee
+docker compose exec minio mc ls -r local/lake/nisshi.employee
 [2025-05-30 06:56:41 UTC] 2.5KiB STANDARD _delta_log/00000000000000000000.json
 [2025-05-30 06:56:41 UTC]   998B STANDARD _delta_log/00000000000000000001.json
 [2025-05-30 06:56:41 UTC] 1.8KiB STANDARD meta.year=2025/meta.month=5/meta.day=30/part-00000-47182dcc-6071-4836-8233-1ae50678194e-c000.parquet
@@ -195,17 +195,17 @@ Create the grade topic:
 just grade-topic-create
 ```
 
-The above command will create an `tansu.grade` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize),
+The above command will create an `nisshi.grade` [Delta Lake](https://delta.io) table, that is [normalized](https://docs.rs/arrow/latest/arrow/array/struct.RecordBatch.html#method.normalize),
 partitioned on `meta.year` from the Kafka message, the [Z Order](https://delta.io/blog/2023-06-03-delta-lake-z-order/) of the data is `value.grade` :
 
 | config                         | value                                                                   |
 |--------------------------------|-------------------------------------------------------------------------|
-| tansu.lake.partition           | meta_year                                                               |
-| tansu.lake.normalize           | true                                                                    |
-| tansu.lake.normalize.separator | _                                                                       |
-| tansu.lake.z_order             | value_grade                                                             |
+| nisshi.lake.partition           | meta_year                                                               |
+| nisshi.lake.normalize           | true                                                                    |
+| nisshi.lake.normalize.separator | _                                                                       |
+| nisshi.lake.z_order             | value_grade                                                             |
 
-Tansu will automatically maintain this table compacting small files and applying Z Ordering every 10 minutes or so.
+Nisshi will automatically maintain this table compacting small files and applying Z Ordering every 10 minutes or so.
 
 Publish the sample data onto the grade topic:
 
@@ -213,13 +213,13 @@ Publish the sample data onto the grade topic:
 just grade-produce
 ```
 
-We can view the files created by Tansu in `s3://lake/tansu.grade` with:
+We can view the files created by Nisshi in `s3://lake/nisshi.grade` with:
 
 ```sh
-just minio-mc ls -r local/lake/tansu.grade
+just minio-mc ls -r local/lake/nisshi.grade
 ```
 
-Note that the `tansu.grade` table, is partitioned on the `meta.year`:
+Note that the `nisshi.grade` table, is partitioned on the `meta.year`:
 
 ```sh
 [2025-05-31 06:57:19 UTC] 3.4KiB STANDARD _delta_log/00000000000000000000.json
